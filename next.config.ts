@@ -1,13 +1,13 @@
 import type { NextConfig } from "next";
 
-const repo = "/FaceMesh2HPOWebApp/refs/heads/master";
+const isProd = process.env.NODE_ENV === "production";
+const repo = "/FaceMesh2HPOWebApp";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  output: "export",
   reactCompiler: true,
-  basePath: repo,
-  assetPrefix: repo,
+  output: "export",
+  basePath: isProd ? repo : "",
+  assetPrefix: isProd ? repo : "",
   images: {
     unoptimized: true,
   },
