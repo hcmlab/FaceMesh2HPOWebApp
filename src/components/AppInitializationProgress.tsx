@@ -20,15 +20,33 @@ export const AppInitializationProgress = ({
     return (
         <>
             <style jsx global>{`
+                .loading-overlay {
+                    position: fixed;
+                    inset: 0;
+                    z-index: 2000;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 1rem;
+                    background: rgba(255, 255, 255, 0.96);
+                    backdrop-filter: blur(10px);
+                    overflow-y: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
+
                 .app-init-shell {
                     width: min(960px, calc(100vw - 2rem));
+                    max-height: calc(100dvh - 2rem);
                     padding: 2rem;
                     border-radius: 28px;
                     background: rgba(255, 255, 255, 0.9);
                     backdrop-filter: blur(18px);
                     border: 1px solid rgba(255, 255, 255, 0.7);
-                    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12),
-                    0 8px 24px rgba(15, 23, 42, 0.08);
+                    box-shadow:
+                        0 20px 60px rgba(15, 23, 42, 0.12),
+                        0 8px 24px rgba(15, 23, 42, 0.08);
+                    overflow-y: auto;
+                    overscroll-behavior: contain;
                 }
 
                 .app-init-badge {
@@ -63,11 +81,12 @@ export const AppInitializationProgress = ({
 
                 .app-init-title {
                     margin: 0;
-                    font-size: clamp(2rem, 4vw, 3.2rem);
+                    font-size: clamp(1.8rem, 4vw, 3.2rem);
                     line-height: 1.05;
                     font-weight: 800;
                     letter-spacing: -0.03em;
                     color: #0f172a;
+                    word-break: break-word;
                 }
 
                 .app-init-subtitle {
@@ -96,6 +115,15 @@ export const AppInitializationProgress = ({
                 .app-init-progress .progress-bar {
                     border-radius: 999px;
                     background: linear-gradient(90deg, #0d6efd, #4dabf7);
+                }
+
+                .app-init-progress-meta {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 0.75rem;
+                    margin-top: 0.5rem;
+                    flex-wrap: wrap;
                 }
 
                 .app-init-progress-label {
@@ -137,13 +165,21 @@ export const AppInitializationProgress = ({
                 }
 
                 @media (max-width: 768px) {
+                    .loading-overlay {
+                        align-items: flex-start;
+                        padding: 0.75rem;
+                    }
+
                     .app-init-shell {
+                        width: 100%;
+                        max-height: calc(100svh - 1.5rem);
                         padding: 1.25rem;
                         border-radius: 22px;
                     }
 
                     .app-init-header {
                         align-items: flex-start;
+                        gap: 0.875rem;
                     }
 
                     .app-init-info-grid {
@@ -154,6 +190,78 @@ export const AppInitializationProgress = ({
                         width: 54px;
                         height: 54px;
                         border-radius: 16px;
+                    }
+
+                    .app-init-subtitle {
+                        font-size: 0.95rem;
+                        line-height: 1.5;
+                    }
+
+                    .app-init-card {
+                        padding: 1rem;
+                        border-radius: 18px;
+                    }
+                }
+
+                @media (max-width: 520px) {
+                    .loading-overlay {
+                        padding: 0.5rem;
+                    }
+
+                    .app-init-shell {
+                        width: 100%;
+                        max-height: calc(100svh - 1rem);
+                        padding: 1rem;
+                        border-radius: 18px;
+                    }
+
+                    .app-init-badge {
+                        font-size: 0.78rem;
+                        padding: 0.4rem 0.72rem;
+                        margin-bottom: 0.85rem;
+                    }
+
+                    .app-init-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 0.75rem;
+                        margin-bottom: 1rem;
+                    }
+
+                    .app-init-logo {
+                        width: 48px;
+                        height: 48px;
+                        border-radius: 14px;
+                    }
+
+                    .app-init-title {
+                        font-size: clamp(1.5rem, 8vw, 2rem);
+                        line-height: 1.1;
+                    }
+
+                    .app-init-subtitle {
+                        margin-top: 0.35rem;
+                        font-size: 0.9rem;
+                    }
+
+                    .app-init-card {
+                        padding: 0.9rem;
+                        margin-bottom: 1rem;
+                    }
+
+                    .app-init-info-card {
+                        padding: 0.9rem;
+                        border-radius: 16px;
+                    }
+
+                    .app-init-info-title {
+                        font-size: 0.95rem;
+                    }
+
+                    .app-init-info-text,
+                    .app-init-footer,
+                    .app-init-progress-label {
+                        font-size: 0.85rem;
                     }
                 }
             `}</style>
@@ -180,7 +288,7 @@ export const AppInitializationProgress = ({
 
                     <div className="app-init-card">
                         <div className="d-flex align-items-center gap-3 mb-3">
-                            <div className="spinner-border text-primary" role="status"/>
+                            <div className="spinner-border text-primary" role="status" />
                             <div>
                                 <h4 className="mb-1">{modelStatus}</h4>
                                 <p className="text-muted mb-0">
@@ -192,11 +300,11 @@ export const AppInitializationProgress = ({
                         <div className="progress app-init-progress">
                             <div
                                 className="progress-bar progress-bar-striped progress-bar-animated"
-                                style={{width: `${loadingProgress}%`}}
+                                style={{ width: `${loadingProgress}%` }}
                             />
                         </div>
 
-                        <div className="d-flex justify-content-between align-items-center mt-2">
+                        <div className="app-init-progress-meta">
                             <span className="app-init-progress-label">
                                 {Math.round(loadingProgress)}% loaded
                             </span>
