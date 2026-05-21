@@ -8,6 +8,7 @@ import {HPOModel} from "@/utils/HPOModel";
 import {buildHierarchy, TreeNode} from "@/utils/TreeNode";
 import {HPOTree} from "@/components/HPOTree";
 import {PatientSetupFlow, PatientSetupSubmitPayload,} from "@/components/PatientSetupFlow";
+import {AppInitializationProgress} from "@/components/AppInitializationProgress";
 
 declare global {
     interface Window {
@@ -279,7 +280,6 @@ export default function FaceMesh2HPO() {
 
                 faceMeshDetector.onResults(onFaceMeshResults);
                 faceMeshDetectorRef.current = faceMeshDetector;
-                console.log("FaceMesh detector initialized", faceMeshDetector);
             }
 
             setModelStatus(`${sessionsRef.current.size} models loaded`);
@@ -475,7 +475,7 @@ export default function FaceMesh2HPO() {
 
         const t1 = performance.now();
         const elapsedMs = t1 - t0;
-        console.log(`runPredictions took ${elapsedMs.toFixed(1)} ms`);
+        console.log(`Inference took ${elapsedMs.toFixed(1)} ms`);
 
         redrawCanvas(null);
         setResults(modelResults.filter(Boolean) as PredictionResult[]);
@@ -894,21 +894,12 @@ export default function FaceMesh2HPO() {
                 }
             `}</style>
 
-            {showAppInitialization && (
-                <div className="loading-overlay">
-                    <div className="spinner-border text-primary mb-4" role="status"/>
-                    <h4 className="mb-2">{modelStatus}</h4>
-                    <div className="w-50">
-                        <div className="progress" style={{height: "10px", borderRadius: "999px"}}>
-                            <div
-                                className="progress-bar progress-bar-striped progress-bar-animated"
-                                style={{width: `${loadingProgress}%`}}
-                            />
-                        </div>
-                    </div>
-                    {loadingETA && <p className="text-muted mt-3 mb-0">{loadingETA}</p>}
-                </div>
-            )}
+            <AppInitializationProgress
+                isVisible={showAppInitialization}
+                modelStatus={modelStatus}
+                loadingProgress={loadingProgress}
+                loadingETA={loadingETA}
+            />
 
             <PatientSetupFlow
                 initialAge={age}
