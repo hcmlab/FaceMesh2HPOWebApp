@@ -20,7 +20,8 @@ declare global {
     }
 }
 
-const REFERENCE_MESH_DATA = "models/result.json";
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const REFERENCE_MESH_DATA = `${BASE_PATH}/models/result.json`;
 
 function prepareDatabase(database: any) {
     const gender: { [key: string]: number } = {};
@@ -197,7 +198,7 @@ export default function FaceMesh2HPO() {
                     id: node.id,
                     name: node.description,
                     description: node.definition,
-                    url: `/models/${node.id.replace(":", "_")}.onnx.gzip`,
+                    url: `${BASE_PATH}/models/${node.id.replace(":", "_")}.onnx.gzip`,
                     parent: node.parent,
                     metaData: node.meta_data || [],
                     importanceValues,
