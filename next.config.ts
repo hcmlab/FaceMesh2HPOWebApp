@@ -1,8 +1,16 @@
 import type { NextConfig } from "next";
 
+const repo = "/FaceMesh2HPOWebApp";
+
 const nextConfig: NextConfig = {
   /* config options here */
-  reactCompiler: true
+  output: "export",
+  reactCompiler: true,
+  basePath: repo,
+  assetPrefix: repo,
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
