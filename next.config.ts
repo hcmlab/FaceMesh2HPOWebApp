@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const repo = "/FaceMesh2HPOWebApp";
+const repo = "/FaceMesh2HPOWebApp/refs/heads/master";
 
 const nextConfig: NextConfig = {
   /* config options here */
