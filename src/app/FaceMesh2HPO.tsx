@@ -21,8 +21,7 @@ declare global {
 }
 
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
-const BASE_PATH =
-  process.env.NEXT_PUBLIC_BASE_PATH ? "https://raw.githubusercontent.com/hcmlab/FaceMesh2HPOWebApp/refs/heads/master/public" : "";
+const BASE_PATH = "https://raw.githubusercontent.com/hcmlab/FaceMesh2HPOWebApp/refs/heads/master/public";
 const REFERENCE_MESH_DATA = `${BASE_PATH}/models/result.json`;
 
 function prepareDatabase(database: any) {
