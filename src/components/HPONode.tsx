@@ -383,11 +383,11 @@ export const HPONode = ({
                   <span className="hpo-node-chip">
                     <strong>ID:</strong> {node.hpoId || node.id}
                   </span>
-                  {node.metrics?.validation_samples !== undefined && (
-                    <span className="hpo-node-chip">
-                      <strong>Validation Samples:</strong> {node.metrics.validation_samples}
-                    </span>
-                  )}
+                  {/*{node.metrics?.validation_samples !== undefined && (*/}
+                  {/*  <span className="hpo-node-chip">*/}
+                  {/*    <strong>Validation Samples:</strong> {node.metrics.validation_samples}*/}
+                  {/*  </span>*/}
+                  {/*)}*/}
                 </div>
 
                 {node.description && (
