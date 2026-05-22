@@ -22,7 +22,7 @@ declare global {
 }
 
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
-const BASE_PATH = "https://raw.githubusercontent.com/hcmlab/FaceMesh2HPOWebApp/refs/heads/master/public";
+const BASE_PATH = ""; // https://raw.githubusercontent.com/hcmlab/FaceMesh2HPOWebApp/refs/heads/master/public";
 const REFERENCE_MESH_DATA = `${BASE_PATH}/models/result.json`;
 
 function prepareDatabase(database: any) {
@@ -86,6 +86,7 @@ export default function FaceMesh2HPO() {
     const [showMainContent, setShowMainContent] = useState(false);
     const [showColorLegend, setShowColorLegend] = useState(false);
     const [showNoFaceModal, setShowNoFaceModal] = useState(false);
+    const [filterStats, setFilterStats] = useState({ visibleCount: 0, matchCount: 0 });
 
     const [age, setAge] = useState<number>(0);
     const [gender, setGender] = useState<number>(-1);
@@ -428,27 +429,13 @@ export default function FaceMesh2HPO() {
         }
     }, []);
 
-    const filteredResults = React.useMemo(() => {
-        return results.filter((r) => r.probability >= minConfidence);
-    }, [results, minConfidence]);
-
-    const searchMatchCount = React.useMemo(() => {
-        const lower = searchTerm.toLowerCase();
-        return filteredResults.filter(
-            (r) =>
-                r.name.toLowerCase().includes(lower) ||
-                r.hpoId.toLowerCase().includes(lower)
-        ).length;
-    }, [filteredResults, searchTerm]);
-
     useEffect(() => {
-        if (filteredResults.length > 0) {
-            const tree = buildHierarchy(filteredResults);
-            setHierarchy(tree);
+        if (results.length > 0) {
+            setHierarchy(buildHierarchy(results));
         } else {
             setHierarchy([]);
         }
-    }, [filteredResults]);
+    }, [results]);
 
     const handleHPONodeSelect = useCallback(
         (node: PredictionResult | null) => {
@@ -475,7 +462,7 @@ export default function FaceMesh2HPO() {
 
         const t1 = performance.now();
         const elapsedMs = t1 - t0;
-        console.log(`Inference took ${elapsedMs.toFixed(1)} ms`);
+        setStatusText(`Inference took ${elapsedMs.toFixed(1)} ms`);
 
         redrawCanvas(null);
         setResults(modelResults.filter(Boolean) as PredictionResult[]);
@@ -523,18 +510,14 @@ export default function FaceMesh2HPO() {
         N: number,
         batch: number
     ): Float32Array => {
-        const perBatch = 3 * N;
-        const data = new Float32Array(batch * perBatch);
-
-        for (let b = 0; b < batch; b++) {
-            const o = b * perBatch;
-            for (let j = 0; j < N; j++) {
-                data[o + j] = points[j][0];
-                data[o + N + j] = points[j][1];
-                data[o + 2 * N + j] = points[j][2];
+        const channels = 3;
+        const nPoints = N;
+        const data = new Float32Array(batch * channels * nPoints);
+        for (let c = 0; c < channels; c++) {
+            for (let j = 0; j < nPoints; j++) {
+                data[c * nPoints + j] = points[j][c];
             }
         }
-
         return data;
     };
 
@@ -622,8 +605,9 @@ export default function FaceMesh2HPO() {
         if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
             const landmarks = results.multiFaceLandmarks[0];
             landmarksRef.current = [...landmarks];
+            console.log("landmarks", landmarksRef.current);
 
-            setStatusText(`Face detected (${landmarks.length} landmarks)`);
+            // setStatusText(`Face detected (${landmarks.length} landmarks)`);
 
             if (pendingFaceDetectionRef.current) {
                 setShowSetupFlow(false);
@@ -836,8 +820,8 @@ export default function FaceMesh2HPO() {
                     gap: 0.5rem;
                     padding: 0.55rem 0.9rem;
                     border-radius: 999px;
-                    background: rgba(13, 110, 253, 0.08);
-                    color: #0d6efd;
+                    background: rgba(13, 110, 253, 0.75);
+                    color: #ffffff;
                     font-weight: 600;
                     font-size: 0.9rem;
                 }
@@ -948,7 +932,7 @@ export default function FaceMesh2HPO() {
                     <div className="col-lg-6">
                         <div className="face-display h-100 p-3">
                             <div className="position-absolute top-0 start-0 m-3 d-flex gap-2 flex-wrap">
-                                {/*{statusText && <div className="status-chip">{statusText}</div>}*/}
+                                {statusText && <div className="status-chip">{statusText}</div>}
                                 {isPredicting && (
                                     <div className="status-chip">
                         <span
@@ -1010,8 +994,8 @@ export default function FaceMesh2HPO() {
 
                             <div className="d-flex justify-content-between align-items-center mb-3 px-1">
                                 <div className="text-muted small">
-                                    {filteredResults.length} results
-                                    {searchTerm && ` • ${searchMatchCount} matches`}
+                                    {filterStats.visibleCount} results
+                                    {searchTerm && ` • ${filterStats.matchCount} matches`}
                                 </div>
 
                                 <div className="d-flex align-items-center gap-2">
@@ -1034,10 +1018,12 @@ export default function FaceMesh2HPO() {
                                 <HPOTree
                                     nodes={hierarchy}
                                     searchTerm={searchTerm}
+                                    minConfidence={minConfidence}
                                     expandedId={expandedId}
                                     onSelect={handleHPONodeSelect}
+                                    onFilterStatsChange={setFilterStats}
                                     onToggleExpand={(id) => {
-                                        setExpandedId(prev => prev === id ? null : id);
+                                        setExpandedId((prev) => (prev === id ? null : id));
                                     }}
                                 />
                             </div>
