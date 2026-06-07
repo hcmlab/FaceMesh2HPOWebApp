@@ -384,7 +384,7 @@ export default function FaceMesh2HPO() {
         canvas.width = imageRef.current.width;
         canvas.height = imageRef.current.height;
         ctx.drawImage(imageRef.current, 0, 0);
-        const radius = (2 * ctx.canvas.width) / 300;
+        const radius = 2;
 
         if (window.drawLandmarks && landmarks && landmarks.length > 0) {
             const pointMask = getPointMaskFromImportance(model?.importanceValues);
