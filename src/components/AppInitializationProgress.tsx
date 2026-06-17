@@ -267,7 +267,7 @@ export const AppInitializationProgress = ({
             `}</style>
             <div className="loading-overlay">
                 <div className="app-init-shell">
-                    <div className="app-init-badge">Prototype</div>
+                    <div className="app-init-badge">Prototype for research purposes only!</div>
 
                     <div className="app-init-header">
                         <Image
