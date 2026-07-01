@@ -421,7 +421,7 @@ export default function FaceMesh2HPO() {
                 });
             } else {
                 window.drawLandmarks(ctx, pointsToDraw, {
-                    color: "rgba(232,232,232,0.33)",
+                    color: "rgb(194 235 255)",
                     lineWidth: 0.5,
                     radius: 1,
                 });

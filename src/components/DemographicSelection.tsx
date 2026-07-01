@@ -121,16 +121,16 @@ export const DemographicSelection = ({
 
                     {/* Gender */}
                     <div className="mb-4">
-                        <label className="form-label fw-bold small text-dark">Gender</label>
+                        <label className="form-label fw-bold small text-dark">Sex</label>
                         <select
                             className={`form-select form-select-sm ${localGender === -1 ? 'text-muted' : ''}`}
                             value={localGender}
                             onChange={(e) => setLocalGender(Number(e.target.value))}
                         >
-                            <option value="-1">Prefer not to say</option>
+                            <option value="-1">Unknown</option>
                             <option value="0">Female</option>
                             <option value="1">Male</option>
-                            <option value="2">Non-binary / Diverse</option>
+                            <option value="2">Other</option>
                         </select>
                     </div>
 
@@ -142,7 +142,7 @@ export const DemographicSelection = ({
                             value={localEthnicity}
                             onChange={(e) => setLocalEthnicity(Number(e.target.value))}
                         >
-                            <option value="-1">Prefer not to say</option>
+                            <option value="-1">Unknown</option>
                             <option value="0">European</option>
                             <option value="1">Asian</option>
                             <option value="2">African</option>
