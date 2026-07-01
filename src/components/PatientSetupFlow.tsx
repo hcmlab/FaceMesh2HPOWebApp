@@ -573,7 +573,7 @@ export const PatientSetupFlow = ({
 
                   <div className="col-12">
                     <label className="form-label-custom" htmlFor="patient-gender">
-                      Gender
+                      Sex
                     </label>
                     <select
                       id="patient-gender"
@@ -585,7 +585,7 @@ export const PatientSetupFlow = ({
                       <option value={-1}>Unknown</option>
                       <option value={0}>Female</option>
                       <option value={1}>Male</option>
-                      <option value={2}>Diverse</option>
+                      <option value={2}>Other</option>
                     </select>
                   </div>
 
@@ -604,7 +604,7 @@ export const PatientSetupFlow = ({
                       <option value={0}>African</option>
                       <option value={1}>Asian</option>
                       <option value={2}>European</option>
-                      <option value={3}>Others</option>
+                      <option value={3}>Other</option>
                     </select>
                   </div>
                 </div>
