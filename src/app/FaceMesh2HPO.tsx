@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import Script from "next/script";
 import {KernelSHAP} from "webshap";
 import {PredictionResult} from "@/utils/PredictionResult";
-import {HPOModel} from "@/utils/HPOModel";
+import {HPOModel, HPOModelCalibration} from "@/utils/HPOModel";
 import {buildHierarchy, TreeNode} from "@/utils/TreeNode";
 import {HPOTree} from "@/components/HPOTree";
 import {PatientSetupFlow, PatientSetupSubmitPayload,} from "@/components/PatientSetupFlow";
@@ -86,7 +86,7 @@ export default function FaceMesh2HPO() {
     const [showMainContent, setShowMainContent] = useState(false);
     const [showColorLegend, setShowColorLegend] = useState(false);
     const [showNoFaceModal, setShowNoFaceModal] = useState(false);
-    const [filterStats, setFilterStats] = useState({ visibleCount: 0, matchCount: 0 });
+    const [filterStats, setFilterStats] = useState({visibleCount: 0, matchCount: 0});
 
     const [age, setAge] = useState<number>(0);
     const [gender, setGender] = useState<number>(-1);
@@ -123,6 +123,59 @@ export default function FaceMesh2HPO() {
         const compressedBytes = await response.arrayBuffer();
         const rawBytes = await decompressGzip(compressedBytes);
         return await window.ort.InferenceSession.create(rawBytes, options);
+    }
+
+    function parseCalibration(raw: any): HPOModelCalibration | undefined {
+        if (!raw || typeof raw !== "object" || typeof raw.method !== "string") {
+            return undefined;
+        }
+
+        const base = {
+            method: raw.method,
+            n: Number(raw.n ?? 0),
+            n_pos: Number(raw.n_pos ?? 0),
+            brier_raw: Number(raw.brier_raw ?? 0),
+            brier_cal: Number(raw.brier_cal ?? 0),
+            ece_raw: Number(raw.ece_raw ?? 0),
+            ece_cal: Number(raw.ece_cal ?? 0),
+        };
+
+        switch (raw.method) {
+            case "beta":
+                if (
+                    typeof raw.a === "number" &&
+                    typeof raw.b === "number" &&
+                    typeof raw.c === "number"
+                ) {
+                    return {
+                        ...base,
+                        method: "beta",
+                        a: raw.a,
+                        b: raw.b,
+                        c: raw.c,
+                    };
+                }
+                return undefined;
+
+            case "temperature":
+                if (typeof raw.T === "number") {
+                    return {
+                        ...base,
+                        method: "temperature",
+                        T: raw.T,
+                    };
+                }
+                return undefined;
+
+            case "none":
+                return {
+                    ...base,
+                    method: "none",
+                };
+
+            default:
+                return undefined;
+        }
     }
 
     const initModels = async () => {
@@ -197,6 +250,8 @@ export default function FaceMesh2HPO() {
                     )
                     : {};
 
+                const calibration = parseCalibration(node.calibration);
+
                 return {
                     id: node.id,
                     name: node.description,
@@ -209,6 +264,7 @@ export default function FaceMesh2HPO() {
                     metrics: bestMetrics,
                     database: databaseInfo,
                     syndromes: syndromesList,
+                    calibration,
                 };
             });
 
@@ -469,6 +525,29 @@ export default function FaceMesh2HPO() {
         setIsPredicting(false);
     };
 
+    function sigmoid(x: number) {
+        return 1 / (1 + Math.exp(-x));
+    }
+
+    function calibrateProbability(logit: number, calibration?: HPOModelCalibration): number {
+        if (!calibration || calibration.method === "none") {
+            return sigmoid(logit);
+        }
+
+        if (calibration.method === "temperature") {
+            return sigmoid(logit / calibration.T);
+        }
+
+        const eps = 1e-6;
+        const p = Math.min(Math.max(sigmoid(logit), eps), 1 - eps);
+        const z =
+            calibration.a * Math.log(p) -
+            calibration.b * Math.log(1 - p) +
+            calibration.c;
+
+        return sigmoid(z);
+    }
+
     const predictSingleModel = async (
         config: HPOModel,
         session: any,
@@ -487,7 +566,7 @@ export default function FaceMesh2HPO() {
 
         const resultsData = await session.run(feeds);
         const predictionRaw = resultsData.logits.data[0] as number;
-        const predictionSigmoid = 1 / (1 + Math.exp(-predictionRaw));
+        const predictionSigmoid = calibrateProbability(predictionRaw, config.calibration);
         const shapValues: number[] = [];
 
         return {
