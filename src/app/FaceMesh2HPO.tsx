@@ -475,7 +475,7 @@ export default function FaceMesh2HPO() {
                     const color = interpolateColor(normalizedImportance, colorScaleLegend);
 
                     ctx.beginPath();
-                    ctx.arc(pt.x * canvas.width, pt.y * canvas.height, radius * 2, 0, 2 * Math.PI);
+                    ctx.arc(pt.x * canvas.width, pt.y * canvas.height, radius, 0, 2 * Math.PI);
                     ctx.fillStyle = color;
                     ctx.fill();
                 });
