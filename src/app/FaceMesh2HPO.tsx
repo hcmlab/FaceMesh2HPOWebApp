@@ -440,7 +440,11 @@ export default function FaceMesh2HPO() {
         canvas.width = imageRef.current.width;
         canvas.height = imageRef.current.height;
         ctx.drawImage(imageRef.current, 0, 0);
-        const radius = 2;
+        const minCanvasSize = Math.min(canvas.width, canvas.height);
+        // Scale point radius with canvas size:
+        // - 0.25% of the smaller canvas dimension
+        // - clamped so points do not become too tiny or too large
+        const radius = Math.max(1, minCanvasSize * 0.0025);
 
         if (window.drawLandmarks && landmarks && landmarks.length > 0) {
             const pointMask = getPointMaskFromImportance(model?.importanceValues);
@@ -471,7 +475,7 @@ export default function FaceMesh2HPO() {
                     const color = interpolateColor(normalizedImportance, colorScaleLegend);
 
                     ctx.beginPath();
-                    ctx.arc(pt.x * canvas.width, pt.y * canvas.height, radius, 0, 2 * Math.PI);
+                    ctx.arc(pt.x * canvas.width, pt.y * canvas.height, radius * 2, 0, 2 * Math.PI);
                     ctx.fillStyle = color;
                     ctx.fill();
                 });
@@ -479,7 +483,7 @@ export default function FaceMesh2HPO() {
                 window.drawLandmarks(ctx, pointsToDraw, {
                     color: "rgb(194 235 255)",
                     lineWidth: 0.5,
-                    radius: 1,
+                    radius: radius,
                 });
             }
         }
